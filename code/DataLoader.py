@@ -1,6 +1,8 @@
 import os
 import pickle
 import numpy as np
+import torch
+from torch.utils.data import DataLoader
 
 """This script implements the functions for reading data.
 """
@@ -88,3 +90,17 @@ def train_valid_split(x_train, y_train, train_ratio=0.8):
 
     return x_train_new, y_train_new, x_valid, y_valid
 
+
+def custom_dataloader(data, label, batch_size, train):
+    if train:
+        data_tensor = torch.tensor(data, dtype = torch.float32)
+        label_tensor = torch.tensor(label)
+        train_dataset = torch.utils.data.TensorDataset(data_tensor, label_tensor)
+        train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
+        return train_loader
+
+    elif not train:
+        data_tensor = torch.tensor(data, dtype = torch.uint8)
+        test_dataset = torch.utils.data.TensorDataset(data_tensor, label_tensor)
+        test_loader = DataLoader(test_dataset, batch_size, shuffle=False)
+        return test_loader
