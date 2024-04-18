@@ -1,6 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
+import sys
+
 
 """This script implements the functions for data augmentation
 and preprocessing.
@@ -16,7 +18,7 @@ def parse_record(record, training):
     Returns:
         image: An array of shape [3, 32, 32].
     """
-    image = np.transpose(record.reshape((3, 32, 32)), [1, 2, 0])
+    image = record.reshape((3, 32, 32))
 
     image = preprocess_image(image, training)
 
@@ -35,21 +37,22 @@ def preprocess_image(image, training):
     """
     if training:
         
-        top_padding = np.zeros((32, 4, image.shape[2]))
-        side_padding = np.zeros((4, 40, image.shape[2]))
-        
-        image = np.concatenate([top_padding, image, top_padding], axis=1)
-        image = np.concatenate([side_padding, image, side_padding], axis=0)
+        top_padding = np.zeros((image.shape[0], 32, 4))
+        side_padding = np.zeros((image.shape[0], 4, 40))
+      
+        image = np.concatenate([top_padding, image, top_padding], axis=2)
+        image = np.concatenate([side_padding, image, side_padding], axis=1)
 
         width_start, height_start = np.random.randint(0, 8, size=2)
         width_end, height_end = width_start + 32, height_start + 32
 
-        image = image[width_start : width_end, height_start : height_end]
+        image = image[:, width_start : width_end, height_start : height_end]
 
         is_flip = np.random.randint(0, 2, dtype='bool')
-        image = np.flip(image, axis=0) if is_flip else image
+        image = np.flip(image, axis=1) if is_flip else image
 
-    mean, std = np.mean(image, axis=(0,1)), np.std(image, axis=(0,1)) 
+    mean, std = np.mean(image, axis=(1,2), keepdims = True), np.std(image, axis=(1,2), keepdims = True) 
+
     image = (image - mean)/std
 
     return image

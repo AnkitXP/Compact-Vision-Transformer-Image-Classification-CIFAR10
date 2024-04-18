@@ -6,7 +6,12 @@ from Network import ViT
 from ImageUtils import parse_record
 from DataLoader import custom_dataloader
 import timeit
-import tqdm
+from tqdm import tqdm
+
+import warnings
+warnings.filterwarnings('ignore')
+
+import sys
 
 """This script defines the training, validation and testing process.
 """
@@ -15,7 +20,7 @@ class MyModel(object):
 
     def __init__(self, configs):
         self.configs = configs
-        self.network = ViT(configs)
+        self.network = ViT(configs).to('cuda')
 
     def model_setup(self, configs):
 
@@ -33,8 +38,8 @@ class MyModel(object):
                                           betas = configs.betas, 
                                           weight_decay = configs.weight_decay)
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, 
-                                                              milestones = configs.scheduler_milestones, 
-                                                              momentum = configs.momentum)
+                                                              milestones = configs.scheduler_milestones,
+                                                              gamma = 0.1)
         
     def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
 
@@ -60,12 +65,15 @@ class MyModel(object):
                 for image in images:
                     processed_images.append(parse_record(image, True))
 
-                current_images = torch.tensor(np.array(processed_images)).float().to('cuda')
-                current_labels = torch.tensor(labels).to('cuda')
+                current_images = torch.tensor(np.array(processed_images), dtype=torch.float32).to('cuda')
+                current_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
 
                 predictions = self.network(current_images)
                 prediction_labels = torch.argmax(predictions, dim=1)
+
                 loss = self.cross_entropy_loss(predictions, current_labels)
+
+                # sys.exit(0)
 
                 train_labels.extend(labels.cpu().detach())
                 train_preds.extend(prediction_labels.cpu().detach())
@@ -93,8 +101,8 @@ class MyModel(object):
                     for image in images:
                         val_processed_images.append(parse_record(image, True))
 
-                    validation_images = torch.tensor(np.array(val_processed_images)).float().to('cuda')
-                    validation_labels = torch.tensor(labels).to('cuda')
+                    validation_images = torch.tensor(np.array(val_processed_images), dtype=torch.float32).to('cuda')
+                    validation_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
 
                     val_predictions = self.network(validation_images)
                     val_prediction_labels = torch.argmax(val_predictions, dim=1)
@@ -102,7 +110,7 @@ class MyModel(object):
                     val_labels.extend(validation_labels.cpu().detach())
                     val_preds.extend(val_prediction_labels.cpu().detach())
 
-                    loss = self.cross_entropy_loss(val_prediction_labels, validation_labels)
+                    loss = self.cross_entropy_loss(val_predictions, validation_labels)
                     val_running_loss += loss.item()
             val_loss = val_running_loss / (idx + 1)
 
@@ -136,8 +144,8 @@ class MyModel(object):
                 for image in images:
                     test_processed_images.append(parse_record(image, False))
 
-                test_images = torch.tensor(np.array(test_processed_images)).float().to('cuda')
-                test_labels = torch.tensor(labels).to('cuda')
+                test_images = torch.tensor(np.array(test_processed_images), dtype=torch.float32).float().to('cuda')
+                test_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
 
                 test_predictions = self.network(test_images)
                 test_prediction_labels = torch.argmax(test_predictions, dim=1)

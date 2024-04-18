@@ -1,12 +1,13 @@
 import torch
 from torch import nn
+import sys
 
 class PatchEmbedding(nn.Module):
-    def __init__(self, in_channels, patch_size, embed_dim):
+    def __init__(self, in_channels, patch_size, embedding_dim):
         super().__init__()
         self.patch_size = patch_size
         self.patcher = nn.Conv2d(in_channels = in_channels,
-                                 out_channels = embed_dim,
+                                 out_channels = embedding_dim,
                                  kernel_size = patch_size,
                                  stride = patch_size,
                                  padding = 0)
@@ -15,7 +16,7 @@ class PatchEmbedding(nn.Module):
 
     def forward(self, x):
         image_resolution = x.shape[-1]
-        assert image_resolution % self.patch_size == 0, f"Input image size must be divisble by patch size, image shape: {image_resolution}, patch size: {patch_size}"
+        assert image_resolution % self.patch_size == 0, f"Input image size must be divisble by patch size, image shape: {image_resolution}, patch size: {self.patch_size}"
 
         x_patched = self.patcher(x)
         x_flattened = self.flatten(x_patched) 
@@ -120,16 +121,16 @@ class ViT(nn.Module):
     def __init__(self, configs):
         
         super().__init__() 
-        self.img_size = configs.img_size, 
-        self.in_channels = configs.in_channels, 
-        self.patch_size = configs.patch_size, 
-        self.num_transformer_layers = configs.num_encoders, 
-        self.embedding_dim = (self.patch_size ** 2) * self.in_channels, 
-        self.mlp_size = configs.mlp_size, 
-        self.num_heads = configs.num_heads, 
-        self.attn_dropout = 0.0, 
-        self.mlp_dropout = configs.dropout_value, 
-        self.embedding_dropout = configs.dropout_value, 
+        self.img_size = configs.img_size 
+        self.in_channels = configs.in_channels 
+        self.patch_size = configs.patch_size 
+        self.num_transformer_layers = configs.num_encoders 
+        self.embedding_dim = (self.patch_size ** 2) * self.in_channels 
+        self.mlp_size = configs.mlp_size 
+        self.num_heads = configs.num_heads 
+        self.attn_dropout = 0.0
+        self.mlp_dropout = configs.dropout_value
+        self.embedding_dropout = configs.dropout_value
         self.num_classes = configs.num_classes
 
         

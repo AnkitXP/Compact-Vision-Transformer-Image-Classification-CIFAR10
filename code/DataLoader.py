@@ -31,9 +31,9 @@ def load_data(data_dir):
         train_path = os.path.join(data_dir, f'data_batch_{i}')
 
         with open(train_path, 'rb') as train_inputs:
-            dataset = pickle.load(train_inputs, encoding='bytes')
-            data.append(dataset[b'data'])
-            labels.append(dataset[b'labels'])
+            train_ds = pickle.load(train_inputs, encoding='bytes')
+            data.append(train_ds[b'data'])
+            labels.append(train_ds[b'labels'])
 
     x_train = np.concatenate(data, axis = 0)
     y_train = np.concatenate(labels, axis = 0)
@@ -41,9 +41,9 @@ def load_data(data_dir):
     test_path = os.path.join(data_dir, f'test_batch')
 
     with open(test_path, 'rb') as test_inputs:
-        dataset = pickle.load(test_inputs, encoding='bytes')
-        x_test = dict[b'data']
-        y_test = dict[b'labels']
+        test_ds = pickle.load(test_inputs, encoding='bytes')
+        x_test = test_ds[b'data']
+        y_test = test_ds[b'labels']
 
     return x_train, y_train, x_test, y_test
 
