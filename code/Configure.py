@@ -3,19 +3,25 @@ model_configs = {
 	"save_dir": '../saved_models/',
 	"depth": 2,
     "data_dir": '../data/',
-    "model_dir":'../model_v1/'
+    "model_dir":'../model_v1/',
+    
+    
+    "img_size": 32,
+    "in_channels": 3,
+    "patch_size": 4,
+    "num_encoders": 12,
+    "num_heads": 12,
+    "dropout_value": 0.1,
+    "num_classes": 10,
+    "mlp_size": 3072
 }
 
 training_configs = {
     "num_epochs": 40,
-	"learning_rate": 0.01,
+	"learning_rate": 0.001,
 	"activation": 'gelu',
-    "dropout_value": 1e-3,
-    "num_heads": 8,
     "batch_size": 128,
-    "save_interval": 10,
-    "num_classes": 10,
-    "patch_size": 4,
+    "save_interval": 10,    
     "momentum": 0.9,
     "weight_decay": 0.01,
     "betas": (0.9, 0.999),

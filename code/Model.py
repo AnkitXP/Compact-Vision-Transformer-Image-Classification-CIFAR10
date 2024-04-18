@@ -16,13 +16,9 @@ class MyModel(object):
     def __init__(self, configs):
         self.configs = configs
         self.network = ViT(configs)
-        self.model_setup()
 
-    def model_setup(self):
-        pass
-        
-    def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
-        
+    def model_setup(self, configs):
+
         random_seed = configs.random_seed
         np.random.seed(random_seed)
         torch.manual_seed(random_seed)
@@ -39,6 +35,10 @@ class MyModel(object):
         self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, 
                                                               milestones = configs.scheduler_milestones, 
                                                               momentum = configs.momentum)
+        
+    def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
+
+        self.model_setup(configs)
 
         start = timeit.default_timer()
 
