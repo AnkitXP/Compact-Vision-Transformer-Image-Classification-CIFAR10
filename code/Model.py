@@ -3,7 +3,6 @@ from torch import nn
 import os, time
 import numpy as np
 from Network import RelViT
-from ImageUtils import parse_record
 from DataLoader import custom_dataloader
 import timeit
 from tqdm import tqdm
@@ -26,8 +25,6 @@ class MyModel(object):
 
         start = timeit.default_timer()
 
-        
-
         train_dataloader = custom_dataloader(x_train, y_train, batch_size=configs.batch_size, train=True)
         val_dataloader = custom_dataloader(x_valid, y_valid, batch_size=configs.batch_size, train=True)
 
@@ -39,7 +36,7 @@ class MyModel(object):
         self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, max_lr=configs.learning_rate,
                                              steps_per_epoch=len(train_dataloader), epochs=configs.num_epochs)
 
-        for epoch in tqdm(range(configs.num_epochs), position=0, leave=True):
+        for epoch in tqdm(range(1, configs.num_epochs + 1), position=0, leave=True):
 
             self.network.train()
 
@@ -92,16 +89,14 @@ class MyModel(object):
             val_loss = val_running_loss / (idx + 1)
 
             print("-"*30)
-            print(f"Train Loss EPOCH {epoch+1}: {train_loss:.4f}")
-            print(f"Valid Loss EPOCH {epoch+1}: {val_loss:.4f}")
-            print(f"Train Accuracy EPOCH {epoch+1}: {sum(1 for x,y in zip(train_preds, train_labels) if x == y) / len(train_labels):.4f}")
-            print(f"Valid Accuracy EPOCH {epoch+1}: {sum(1 for x,y in zip(val_preds, val_labels) if x == y) / len(val_labels):.4f}")
+            print(f"EPOCH {epoch}: Train Loss {train_loss:.4f}, Valid Loss {val_loss:.4f}")
+            print(f"EPOCH {epoch}: Train Accuracy {sum(1 for x,y in zip(train_preds, train_labels) if x == y) / len(train_labels):.4f}, Valid Accuracy {sum(1 for x,y in zip(val_preds, val_labels) if x == y) / len(val_labels):.4f}")
             print("-"*30)
 
-        if epoch % configs.save_interval == 0:
-            self.save(epoch)
+            if (epoch) % configs.save_interval == 0:
+                self.save(epoch)
 
-        stop = timeit.default_timer
+        stop = timeit.default_timer()
         print(f"Training Time: {stop - start : .2f}s")
 
     def evaluate(self, x, y):
