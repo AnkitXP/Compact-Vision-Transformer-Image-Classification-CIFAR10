@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import os, time
 import numpy as np
-from Network import ViT
+from Network import RelViT
 from ImageUtils import parse_record
 from DataLoader import custom_dataloader
 import timeit
@@ -20,7 +20,7 @@ class MyModel(object):
 
     def __init__(self, configs):
         self.configs = configs
-        self.network = ViT(configs).to('cuda')
+        self.network = RelViT(configs).to('cuda')
 
     def model_setup(self, configs):
 
@@ -32,14 +32,12 @@ class MyModel(object):
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
 
-        self.cross_entropy_loss = nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.network.parameters(),
+        self.cross_entropy_loss = nn.CrossEntropyLoss(label_smoothing=0.1)
+        self.optimizer = torch.optim.AdamW(self.network.parameters(),
                                           lr = configs.learning_rate, 
                                           betas = configs.betas, 
                                           weight_decay = configs.weight_decay)
-        self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, 
-                                                              milestones = configs.scheduler_milestones,
-                                                              gamma = 0.1)
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=5)
         
     def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
 
@@ -61,19 +59,17 @@ class MyModel(object):
             for idx, (images, labels) in enumerate(tqdm(train_dataloader, position=0, leave=True)):
 
                 processed_images =[]
-                
+
                 for image in images:
                     processed_images.append(parse_record(image, True))
 
-                current_images = torch.tensor(np.array(processed_images), dtype=torch.float32).to('cuda')
+                current_images = torch.stack(processed_images, dim=0).float().to('cuda')
                 current_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
 
                 predictions = self.network(current_images)
                 prediction_labels = torch.argmax(predictions, dim=1)
 
                 loss = self.cross_entropy_loss(predictions, current_labels)
-
-                # sys.exit(0)
 
                 train_labels.extend(labels.cpu().detach())
                 train_preds.extend(prediction_labels.cpu().detach())
@@ -101,7 +97,7 @@ class MyModel(object):
                     for image in images:
                         val_processed_images.append(parse_record(image, True))
 
-                    validation_images = torch.tensor(np.array(val_processed_images), dtype=torch.float32).to('cuda')
+                    validation_images = torch.stack(val_processed_images, dim=0).float().to('cuda')
                     validation_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
 
                     val_predictions = self.network(validation_images)
@@ -144,7 +140,7 @@ class MyModel(object):
                 for image in images:
                     test_processed_images.append(parse_record(image, False))
 
-                test_images = torch.tensor(np.array(test_processed_images), dtype=torch.float32).float().to('cuda')
+                test_images = torch.stack(test_processed_images, dim=0).float().to('cuda')
                 test_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
 
                 test_predictions = self.network(test_images)

@@ -1,5 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from torchvision import transforms
+import torch
 
 import sys
 
@@ -35,25 +37,20 @@ def preprocess_image(image, training):
     Returns:
         image: An array of shape [3, 32, 32]. The processed image.
     """
+    train_transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.TrivialAugmentWide(interpolation=transforms.InterpolationMode.BILINEAR),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop(32, padding=4),
+        transforms.PILToTensor(),
+        transforms.ConvertImageDtype(torch.float),
+        transforms.RandomErasing(p=0.1)
+        ])
+
     if training:
-        
-        top_padding = np.zeros((image.shape[0], 32, 4))
-        side_padding = np.zeros((image.shape[0], 4, 40))
-      
-        image = np.concatenate([top_padding, image, top_padding], axis=2)
-        image = np.concatenate([side_padding, image, side_padding], axis=1)
+        image = train_transform(image)
 
-        width_start, height_start = np.random.randint(0, 8, size=2)
-        width_end, height_end = width_start + 32, height_start + 32
-
-        image = image[:, width_start : width_end, height_start : height_end]
-
-        is_flip = np.random.randint(0, 2, dtype='bool')
-        image = np.flip(image, axis=1) if is_flip else image
-
-    mean, std = np.mean(image, axis=(1,2), keepdims = True), np.std(image, axis=(1,2), keepdims = True) 
-
-    image = (image - mean)/std
+    # print(image.size())
 
     return image
 

@@ -30,7 +30,7 @@ training_configs = dotdict({
     "batch_size": 128,
     "save_interval": 10,    
     "momentum": 0.9,
-    "weight_decay": 0.01,
+    "weight_decay": 0.,
     "betas": (0.9, 0.999),
     "random_seed": 42,
     "scheduler_milestones": (30, 35)
