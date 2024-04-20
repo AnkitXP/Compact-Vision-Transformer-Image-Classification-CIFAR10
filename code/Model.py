@@ -21,32 +21,23 @@ class MyModel(object):
     def __init__(self, configs):
         self.configs = configs
         self.network = RelViT(configs).to('cuda')
+      
+    def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
 
-    def model_setup(self, configs):
+        start = timeit.default_timer()
 
-        random_seed = configs.random_seed
-        np.random.seed(random_seed)
-        torch.manual_seed(random_seed)
-        torch.cuda.manual_seed(random_seed)
-        torch.cuda.manual_seed_all(random_seed)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+        
+
+        train_dataloader = custom_dataloader(x_train, y_train, batch_size=configs.batch_size, train=True)
+        val_dataloader = custom_dataloader(x_valid, y_valid, batch_size=configs.batch_size, train=True)
 
         self.cross_entropy_loss = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.optimizer = torch.optim.AdamW(self.network.parameters(),
                                           lr = configs.learning_rate, 
                                           betas = configs.betas, 
                                           weight_decay = configs.weight_decay)
-        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=5)
-        
-    def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
-
-        self.model_setup(configs)
-
-        start = timeit.default_timer()
-
-        train_dataloader = custom_dataloader(x_train, y_train, batch_size=configs.batch_size, train=True)
-        val_dataloader = custom_dataloader(x_valid, y_valid, batch_size=configs.batch_size, train=True)
+        self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, max_lr=configs.learning_rate,
+                                             steps_per_epoch=len(train_dataloader), epochs=configs.num_epochs)
 
         for epoch in tqdm(range(configs.num_epochs), position=0, leave=True):
 
@@ -58,12 +49,7 @@ class MyModel(object):
 
             for idx, (images, labels) in enumerate(tqdm(train_dataloader, position=0, leave=True)):
 
-                processed_images =[]
-
-                for image in images:
-                    processed_images.append(parse_record(image, True))
-
-                current_images = torch.stack(processed_images, dim=0).float().to('cuda')
+                current_images = torch.tensor(images, dtype=torch.float32).to('cuda')
                 current_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
 
                 predictions = self.network(current_images)
@@ -90,15 +76,10 @@ class MyModel(object):
             val_running_loss = 0
 
             with torch.no_grad():
-                for idx, (images, labels) in enumerate(tqdm(val_dataloader, position=0, leave=True)):
+                for idx, (validation_images, validation_labels) in enumerate(tqdm(val_dataloader, position=0, leave=True)):
 
-                    val_processed_images = []
-                    
-                    for image in images:
-                        val_processed_images.append(parse_record(image, True))
-
-                    validation_images = torch.stack(val_processed_images, dim=0).float().to('cuda')
-                    validation_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
+                    validation_images = torch.tensor(validation_images, dtype=torch.float32).to('cuda')
+                    validation_labels = torch.tensor(validation_labels, dtype=torch.int64).to('cuda')
 
                     val_predictions = self.network(validation_images)
                     val_prediction_labels = torch.argmax(val_predictions, dim=1)
@@ -133,15 +114,10 @@ class MyModel(object):
         test_preds_final = []
 
         with torch.no_grad():
-            for idx, (images, labels) in enumerate(tqdm(test_dataloader, position=0, leave=True)):
+            for idx, (testing_images, testing_labels) in enumerate(tqdm(test_dataloader, position=0, leave=True)):
 
-                test_processed_images = []
-                
-                for image in images:
-                    test_processed_images.append(parse_record(image, False))
-
-                test_images = torch.stack(test_processed_images, dim=0).float().to('cuda')
-                test_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
+                test_images = torch.tensor(testing_images, dtype=torch.float32).to('cuda')
+                test_labels = torch.tensor(testing_labels, dtype=torch.int64).to('cuda')
 
                 test_predictions = self.network(test_images)
                 test_prediction_labels = torch.argmax(test_predictions, dim=1)

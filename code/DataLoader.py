@@ -3,6 +3,9 @@ import pickle
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
+from Cifar import MyCIFAR10
+from torchvision import transforms
+from Configure import model_configs
 
 """This script implements the functions for reading data.
 """
@@ -31,19 +34,22 @@ def load_data(data_dir):
         train_path = os.path.join(data_dir, f'data_batch_{i}')
 
         with open(train_path, 'rb') as train_inputs:
-            train_ds = pickle.load(train_inputs, encoding='bytes')
-            data.append(train_ds[b'data'])
-            labels.append(train_ds[b'labels'])
+            train_ds = pickle.load(train_inputs, encoding='latin1')
+            data.append(train_ds['data'])
+            labels.append(train_ds['labels'])
 
-    x_train = np.concatenate(data, axis = 0)
+    x_train = np.vstack(data).reshape(-1, 3, 32, 32)
     y_train = np.concatenate(labels, axis = 0)
 
     test_path = os.path.join(data_dir, f'test_batch')
 
     with open(test_path, 'rb') as test_inputs:
-        test_ds = pickle.load(test_inputs, encoding='bytes')
-        x_test = test_ds[b'data']
-        y_test = test_ds[b'labels']
+        test_ds = pickle.load(test_inputs, encoding='latin1')
+        x_test = test_ds['data']
+        y_test = test_ds['labels']
+
+    x_test = np.array(x_test).reshape(-1, 3, 32, 32)
+    y_test = np.array(y_test)
 
     return x_train, y_train, x_test, y_test
 
@@ -92,15 +98,27 @@ def train_valid_split(x_train, y_train, train_ratio=0.8):
 
 
 def custom_dataloader(data, label, batch_size, train):
+
+    train_transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.TrivialAugmentWide(interpolation=transforms.InterpolationMode.BILINEAR),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop(32, padding=4),
+        transforms.PILToTensor(),
+        transforms.ConvertImageDtype(torch.float),
+        transforms.RandomErasing(p=0.1)
+        ])
+    
+    test_transform = transforms.Compose([
+        transforms.ToTensor()
+        ])
+    
     if train:
-        data_tensor = torch.tensor(data, dtype = torch.float32)
-        label_tensor = torch.tensor(label)
-        train_dataset = torch.utils.data.TensorDataset(data_tensor, label_tensor)
-        train_loader = DataLoader(train_dataset, batch_size, shuffle=True)
+        train_dataset = MyCIFAR10(data, label, transform=train_transform)
+        train_loader = DataLoader(train_dataset, batch_size, shuffle=True, num_workers=model_configs.num_workers, pin_memory=True)
         return train_loader
 
     elif not train:
-        data_tensor = torch.tensor(data, dtype = torch.uint8)
-        test_dataset = torch.utils.data.TensorDataset(data_tensor, label_tensor)
-        test_loader = DataLoader(test_dataset, batch_size, shuffle=False)
+        test_dataset = MyCIFAR10(data, label, transform=test_transform)
+        test_loader = DataLoader(test_dataset, batch_size, shuffle=False, num_workers=model_configs.num_workers, pin_memory=True)
         return test_loader

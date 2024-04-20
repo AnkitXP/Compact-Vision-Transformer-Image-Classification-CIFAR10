@@ -11,16 +11,19 @@ model_configs = dotdict({
     "data_dir": '../data/',
     "model_dir": '../model_v1/',
     "result_dir": '../results/',
-    
-    
+    "num_workers" : 8,     
     "img_size": 32,
     "in_channels": 3,
     "patch_size": 4,
     "num_encoders": 12,
     "num_heads": 12,
-    "dropout_value": 0.1,
+    "embed_dropout": 0.,
+    "transformer_dropout": 0.,
+    "classifier_dropout": 0.,
     "num_classes": 10,
-    "mlp_size": 3072
+    "mlp_size": 3072,
+    "hidden_channels" : 256
+    "head_channels" : 32
 })
 
 training_configs = dotdict({

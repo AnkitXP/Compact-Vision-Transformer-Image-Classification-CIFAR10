@@ -38,7 +38,6 @@ def preprocess_image(image, training):
         image: An array of shape [3, 32, 32]. The processed image.
     """
     train_transform = transforms.Compose([
-        transforms.ToPILImage(),
         transforms.TrivialAugmentWide(interpolation=transforms.InterpolationMode.BILINEAR),
         transforms.RandomHorizontalFlip(),
         transforms.RandomCrop(32, padding=4),
