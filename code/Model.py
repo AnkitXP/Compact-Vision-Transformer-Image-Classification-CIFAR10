@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-import os, time
+import os
 import numpy as np
 from Network import RelativeViT
 from DataLoader import custom_dataloader
@@ -9,8 +9,6 @@ from tqdm import tqdm
 
 import warnings
 warnings.filterwarnings('ignore')
-
-import sys
 
 """This script defines the training, validation and testing process.
 """
@@ -116,8 +114,6 @@ class MyModel(object):
 
                 test_predictions = self.network(test_images)
                 test_prediction_labels = torch.argmax(test_predictions, dim=1)
-
-                # print(test_prediction_labels.shape)
 
                 test_labels_final.extend(test_labels.cpu().detach())
                 test_preds_final.extend(test_prediction_labels.cpu().detach())

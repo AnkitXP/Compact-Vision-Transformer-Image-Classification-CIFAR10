@@ -1,10 +1,5 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from torchvision import transforms
-import torch
-
-import sys
-
 
 """This script implements the functions for data augmentation
 and preprocessing.
@@ -23,32 +18,6 @@ def parse_record(record, training):
     image = record.reshape((3, 32, 32))
 
     return image
-
-
-def preprocess_image(image, training):
-    """Preprocess a single image of shape [height, width, depth].
-
-    Args:
-        image: An array of shape [3, 32, 32].
-        training: A boolean. Determine whether it is in training mode.
-
-    Returns:
-        image: An array of shape [3, 32, 32]. The processed image.
-    """
-    train_transform = transforms.Compose([
-        transforms.TrivialAugmentWide(interpolation=transforms.InterpolationMode.BILINEAR),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(32, padding=4),
-        transforms.PILToTensor(),
-        transforms.ConvertImageDtype(torch.float),
-        transforms.RandomErasing(p=0.1)
-        ])
-
-    if training:
-        image = train_transform(image)
-
-    return image
-
 
 def visualize(image, save_name='test.png'):
     """Visualize a single test image.

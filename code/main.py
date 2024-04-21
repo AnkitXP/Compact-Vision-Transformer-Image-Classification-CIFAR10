@@ -1,4 +1,3 @@
-import torch
 import os, argparse
 import numpy as np
 from Model import MyModel
@@ -6,17 +5,12 @@ from DataLoader import load_data, train_valid_split, load_testing_images
 from Configure import model_configs, training_configs
 from ImageUtils import visualize
 
-import sys
-
 def configure():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--mode", type=str, help="train, test or predict")
 	return parser.parse_args()
 
 def main(args, model_configs):
-
-	# print(model_configs.patch_size ** 2)
-	# sys.exit(0)
 
 	model = MyModel(model_configs)
 

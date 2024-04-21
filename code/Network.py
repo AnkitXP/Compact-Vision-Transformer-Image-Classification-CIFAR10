@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-import sys
 
 class Residual(nn.Module):
     def __init__(self, *layers):
@@ -24,7 +23,6 @@ class LayerNormChannels(nn.Module):
         x = x.transpose(-1, 1)
         return x
     
-
 class SelfAttention2d(nn.Module):
     def __init__(self, in_channels, out_channels, head_channels, shape):
         super().__init__()
@@ -72,7 +70,6 @@ class SelfAttention2d(nn.Module):
         indices = indices.flatten()
         
         return indices
-    
 
 class FeedForward(nn.Sequential):
     def __init__(self, in_channels, out_channels, mult=4):
