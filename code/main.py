@@ -36,11 +36,10 @@ def main(args, model_configs):
 		# Loading private testing dataset
 		x_test = load_testing_images(model_configs.data_dir)
 		# visualizing the first testing image to check your image shape
-		visualize(x_test[0], 'test.png')
+		visualize(x_test[0], model_configs.result_dir + 'test.png')
 		# Predicting and storing results on private testing dataset 
 		predictions = model.predict_prob(x_test)
-		np.save(model_configs.result_dir, predictions)
-
+		np.save(model_configs.result_dir + 'predictions.npy', predictions)
 
 if __name__ == '__main__':
 	os.environ['CUDA_VISIBLE_DEVICES']='0'

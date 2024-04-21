@@ -22,8 +22,6 @@ def parse_record(record, training):
     """
     image = record.reshape((3, 32, 32))
 
-    image = preprocess_image(image, training)
-
     return image
 
 
@@ -49,8 +47,6 @@ def preprocess_image(image, training):
     if training:
         image = train_transform(image)
 
-    # print(image.size())
-
     return image
 
 
@@ -64,7 +60,8 @@ def visualize(image, save_name='test.png'):
     Returns:
         image: An array of shape [32, 32, 3].
     """
-    image = parse_record(image)    
+    image = parse_record(image, False)    
+    image = np.transpose(image, [1, 2, 0])
     plt.imshow(image)
     plt.savefig(save_name)
     return image

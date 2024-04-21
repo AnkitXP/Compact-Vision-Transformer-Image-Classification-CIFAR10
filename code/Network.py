@@ -140,7 +140,7 @@ class Head(nn.Sequential):
             nn.Linear(in_channels, classes)
         )
 
-class RelViT(nn.Sequential):
+class RelativeViT(nn.Sequential):
     def __init__(self, configs):
         classes = configs.num_classes 
         image_size = configs.img_size

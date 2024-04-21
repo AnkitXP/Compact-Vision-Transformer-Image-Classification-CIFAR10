@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import os, time
 import numpy as np
-from Network import RelViT
+from Network import RelativeViT
 from DataLoader import custom_dataloader
 import timeit
 from tqdm import tqdm
@@ -19,7 +19,7 @@ class MyModel(object):
 
     def __init__(self, configs):
         self.configs = configs
-        self.network = RelViT(configs).to('cuda')
+        self.network = RelativeViT(configs).to('cuda')
       
     def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
 
@@ -125,9 +125,19 @@ class MyModel(object):
         print(f"Test Accuracy: {np.sum(np.array(test_preds_final) == np.array(test_labels_final))/len(test_labels_final):.2f}")
 
     def predict_prob(self, x):
-        probabilities = self.network(x)
-        probabilities_np = probabilities.cpu().detach()
-        np.save(self.configs.result_dir+'predictions.npy', probabilities)
+        x = x.reshape(-1, 3, 32, 32)
+        predict_dataloader = custom_dataloader(x, x, batch_size=128, train=False)
+        self.network.eval()
+        
+        predict_proba_final = []
+        
+        with torch.no_grad():
+            for idx, (prediction_images, _) in enumerate(tqdm(predict_dataloader, position=0, leave=True)):
+                test_data = torch.tensor(prediction_images, dtype=torch.float32).to('cuda')
+                probabilities = self.network(test_data)
+                predict_proba_final.extend(probabilities.cpu().detach())
+
+        return np.stack(predict_proba_final, axis=0)
 
     def save(self, epoch):
         checkpoint_path = os.path.join(self.configs.save_dir, 'model-%d.ckpt'%(epoch))
