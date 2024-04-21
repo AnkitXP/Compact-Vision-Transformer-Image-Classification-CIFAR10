@@ -75,9 +75,7 @@ class FeedForward(nn.Sequential):
     def __init__(self, in_channels, out_channels, mult=4):
         hidden_channels = in_channels * mult
         super().__init__(
-            nn.Conv2d(in_channels, hidden_channels//2, 1),
-            nn.GELU(),
-            nn.Conv2d(hidden_channels//2, hidden_channels, 1),
+            nn.Conv2d(in_channels, hidden_channels, 1),
             nn.GELU(),
             nn.Conv2d(hidden_channels, out_channels, 1)   
         )
@@ -113,7 +111,7 @@ class ToPatches(nn.Sequential):
 class AddPositionEmbedding(nn.Module):
     def __init__(self, channels, shape):
         super().__init__()
-        self.pos_embedding = nn.Parameter(torch.Tensor(channels, *shape))
+        self.pos_embedding = nn.Parameter(torch.randn(channels, shape[0], shape[1]))
     
     def forward(self, x):
         return x + self.pos_embedding

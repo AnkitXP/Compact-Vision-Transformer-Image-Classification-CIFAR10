@@ -10,6 +10,8 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
 
+import gc
+
 """This script defines the training, validation and testing process.
 """
 
@@ -20,6 +22,8 @@ class MyModel(object):
         self.network = RelativeViT(configs).to('cuda')
       
     def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
+
+        torch.cuda.empty_cache()
 
         start = timeit.default_timer()
 

@@ -3,3 +3,6 @@ starter_code/*
 code/__pycache__/*
 code/*.png
 results/*
+main_out*
+run.slurm*
+.vscode/*
