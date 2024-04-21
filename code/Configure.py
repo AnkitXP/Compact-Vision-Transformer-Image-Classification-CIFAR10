@@ -11,10 +11,10 @@ model_configs = dotdict({
     "data_dir": '../data/',
     "model_dir": '../model_v1/',
     "result_dir": '../results/',
-    "num_workers" : 12,     
+    "num_workers" : 8,     
     "img_size": 32,
     "in_channels": 3,
-    "patch_size": 4,
+    "patch_size": 2,
     "num_encoders": 8,
     "num_heads": 12,
     "embed_dropout": 0.,
@@ -26,11 +26,10 @@ model_configs = dotdict({
 })
 
 training_configs = dotdict({
-    "num_epochs": 20,
+    "num_epochs": 10,
 	"learning_rate": 0.001,
-	"activation": 'gelu',
     "batch_size": 128,
-    "save_interval": 10,    
+    "save_interval": 4,    
     "momentum": 0.9,
     "weight_decay": 0.,
     "betas": (0.9, 0.99)

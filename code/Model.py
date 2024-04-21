@@ -101,7 +101,7 @@ class MyModel(object):
 
     def evaluate(self, x, y):
 
-        test_dataloader = custom_dataloader(x, y, train=False)
+        test_dataloader = custom_dataloader(x, y, batch_size=128, train=False)
 
         self.network.eval()
             
@@ -117,20 +117,21 @@ class MyModel(object):
                 test_predictions = self.network(test_images)
                 test_prediction_labels = torch.argmax(test_predictions, dim=1)
 
+                # print(test_prediction_labels.shape)
+
                 test_labels_final.extend(test_labels.cpu().detach())
                 test_preds_final.extend(test_prediction_labels.cpu().detach())
 
-            y_preds = torch.tensor(test_prediction_labels)
-            y_labels = torch.tensor(y)
-
-        print(f"Test Accuracy: {torch.sum(y_preds==y_labels)/y_labels.shape[0]:.4f}")
+        print(f"Test Accuracy: {np.sum(np.array(test_preds_final) == np.array(test_labels_final))/len(test_labels_final):.2f}")
 
     def predict_prob(self, x):
-        pass
+        probabilities = self.network(x)
+        probabilities_np = probabilities.cpu().detach()
+        np.save(self.configs.result_dir+'predictions.npy', probabilities)
 
     def save(self, epoch):
         checkpoint_path = os.path.join(self.configs.save_dir, 'model-%d.ckpt'%(epoch))
-        os.makedirs(self.configs.model_dir, exist_ok=True)
+        os.makedirs(self.configs.save_dir, exist_ok=True)
         torch.save(self.network.state_dict(), checkpoint_path)
         print("Checkpoint created.")
 

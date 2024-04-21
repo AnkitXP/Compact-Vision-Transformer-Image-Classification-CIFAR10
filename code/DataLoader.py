@@ -65,8 +65,8 @@ def load_testing_images(data_dir):
         x_test: An numpy array of shape [N, 3072].
             (dtype=np.float32)
     """
-
-    
+    filepath = os.path.join(data_dir, f'private_test_images_2024.npy')
+    x_test = np.load(filepath)
 
     return x_test
 
