@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+from torch.functional import Tensor
 
 class Residual(nn.Module):
     def __init__(self, *layers):
@@ -103,9 +104,18 @@ class TransformerStack(nn.Sequential):
 class ToPatches(nn.Sequential):
     def __init__(self, in_channels, channels, patch_size, hidden_channels=32):
         super().__init__(
-            nn.Conv2d(in_channels, hidden_channels, 3, padding=1),
+            nn.BatchNorm2d(in_channels, eps=1e-5, momentum=0.997),
+            nn.LeakyReLU(),
+            nn.Conv2d(in_channels, hidden_channels//4, 3, padding=1),
             nn.GELU(),
-            nn.Conv2d(hidden_channels, channels, patch_size, stride=patch_size)
+            nn.Conv2d(hidden_channels//4, hidden_channels//2, 3, padding=1),
+            nn.GELU(),
+            nn.Conv2d(in_channels//2, hidden_channels, 3, padding=1),
+            nn.GELU(),
+            nn.BatchNorm2d(hidden_channels, eps=1e-5, momentum=0.997),
+            nn.LeakyReLU(),
+            nn.Conv2d(hidden_channels, channels, patch_size, stride=patch_size),
+            nn.GELU()
         )
 
 class AddPositionEmbedding(nn.Module):

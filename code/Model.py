@@ -6,6 +6,7 @@ from Network import RelativeViT
 from DataLoader import custom_dataloader
 import timeit
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -23,6 +24,11 @@ class MyModel(object):
       
     def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
 
+        print(configs)
+        print(self.configs)
+
+        print("<===================================================================== Training =====================================================================>")
+
         torch.cuda.empty_cache()
 
         start = timeit.default_timer()
@@ -37,6 +43,9 @@ class MyModel(object):
                                           weight_decay = configs.weight_decay)
         self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, max_lr=configs.learning_rate,
                                              steps_per_epoch=len(train_dataloader), epochs=configs.num_epochs)
+        
+        train_loss_history = []
+        val_loss_history = []
 
         for epoch in tqdm(range(1, configs.num_epochs + 1), position=0, leave=True):
 
@@ -67,6 +76,7 @@ class MyModel(object):
                 train_running_loss += loss.item()
             
             train_loss = train_running_loss / (idx +1)
+            train_loss_history.append(train_loss)
 
             self.network.eval()
             
@@ -89,6 +99,7 @@ class MyModel(object):
                     loss = self.cross_entropy_loss(val_predictions, validation_labels)
                     val_running_loss += loss.item()
             val_loss = val_running_loss / (idx + 1)
+            val_loss_history.append(val_loss)
 
             print("-"*30)
             print(f"EPOCH {epoch}: Train Loss {train_loss:.4f}, Valid Loss {val_loss:.4f}")
@@ -100,8 +111,11 @@ class MyModel(object):
 
         stop = timeit.default_timer()
         print(f"Training Time: {stop - start : .2f}s")
+        self.plot_loss_graphs(self.configs.result_dir, train_loss_history, val_loss_history)
 
     def evaluate(self, x, y):
+
+        print("<===================================================================== Testing =====================================================================>")
 
         test_dataloader = custom_dataloader(x, y, batch_size=128, train=False)
 
@@ -125,6 +139,8 @@ class MyModel(object):
         print(f"Test Accuracy: {np.sum(np.array(test_preds_final) == np.array(test_labels_final))/len(test_labels_final):.2f}")
 
     def predict_prob(self, x):
+        print("<===================================================================== Prediction =====================================================================>")
+
         x = x.reshape(-1, 3, 32, 32)
         predict_dataloader = custom_dataloader(x, x, batch_size=128, train=False)
         self.network.eval()
@@ -140,7 +156,7 @@ class MyModel(object):
         return np.stack(predict_proba_final, axis=0)
 
     def save(self, epoch):
-        checkpoint_path = os.path.join(self.configs.save_dir, 'model-%d.ckpt'%(epoch))
+        checkpoint_path = os.path.join(self.configs.save_dir, 'cifar10-classifier.ckpt')
         os.makedirs(self.configs.save_dir, exist_ok=True)
         torch.save(self.network.state_dict(), checkpoint_path)
         print("Checkpoint created.")
@@ -149,3 +165,30 @@ class MyModel(object):
         ckpt = torch.load(checkpoint_name, map_location="cpu")
         self.network.load_state_dict(ckpt, strict=True)
         print("Restored model parameters from {}".format(checkpoint_name))
+
+    def plot_loss_graphs(self, result_dir, train_loss_history, val_loss_history):
+        
+        """
+        Save the loss plot as an image.
+
+        Args:
+        - train_loss_history (list): List of training loss values
+        - val_loss_history (list): List of validation loss values
+        - configs: Configuration object containing the path to save the image
+
+        Returns:
+        - None
+        """
+        print(result_dir)
+        os.makedirs(result_dir, exist_ok=True)
+        plt.figure(figsize=(10, 6))
+        plt.plot(train_loss_history, label='Train Loss', color='blue')
+        plt.plot(val_loss_history, label='Validation Loss', color='orange')
+        plt.title('Training and Validation Losses')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.grid(True)
+        
+        plt.savefig(os.path.join(result_dir, 'loss_plot.png'))
+        plt.close()

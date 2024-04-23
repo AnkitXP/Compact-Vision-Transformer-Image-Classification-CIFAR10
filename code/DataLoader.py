@@ -71,7 +71,7 @@ def load_testing_images(data_dir):
     return x_test
 
 
-def train_valid_split(x_train, y_train, train_ratio=0.8):
+def train_valid_split(x_train, y_train, train_ratio=0.9):
     """Split the original training data into a new training dataset
     and a validation dataset.
 
