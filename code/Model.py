@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import os
 import numpy as np
-from Network import RelativeViT
+from Network import CompactVisionTransformer
 from DataLoader import custom_dataloader
 import timeit
 from tqdm import tqdm
@@ -20,7 +20,7 @@ class MyModel(object):
 
     def __init__(self, configs):
         self.configs = configs
-        self.network = RelativeViT(configs).to('cuda')
+        self.network = CompactVisionTransformer(32, 2, 10).to('cuda')
       
     def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
 
@@ -29,8 +29,6 @@ class MyModel(object):
 
         print("<===================================================================== Training =====================================================================>")
 
-        torch.cuda.empty_cache()
-
         start = timeit.default_timer()
 
         train_dataloader = custom_dataloader(x_train, y_train, batch_size=configs.batch_size, train=True)
@@ -38,11 +36,10 @@ class MyModel(object):
 
         self.cross_entropy_loss = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.optimizer = torch.optim.AdamW(self.network.parameters(),
-                                          lr = configs.learning_rate, 
-                                          betas = configs.betas, 
+                                          lr = configs.learning_rate,  
                                           weight_decay = configs.weight_decay)
-        self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, max_lr=configs.learning_rate,
-                                             steps_per_epoch=len(train_dataloader), epochs=configs.num_epochs)
+        # self.optimizer = torch.optim.SGD(self.network.parameters(), lr=configs.learning_rate, momentum=0.9, weight_decay=0.0001)
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=configs.num_epochs, eta_min = 1e-5)
         
         train_loss_history = []
         val_loss_history = []
@@ -60,6 +57,8 @@ class MyModel(object):
                 current_images = torch.tensor(images, dtype=torch.float32).to('cuda')
                 current_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
 
+                self.optimizer.zero_grad()
+
                 predictions = self.network(current_images)
                 prediction_labels = torch.argmax(predictions, dim=1)
 
@@ -68,10 +67,8 @@ class MyModel(object):
                 train_labels.extend(labels.cpu().detach())
                 train_preds.extend(prediction_labels.cpu().detach())
 
-                self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-                self.scheduler.step()
 
                 train_running_loss += loss.item()
             
@@ -105,6 +102,7 @@ class MyModel(object):
             print(f"EPOCH {epoch}: Train Loss {train_loss:.4f}, Valid Loss {val_loss:.4f}")
             print(f"EPOCH {epoch}: Train Accuracy {sum(1 for x,y in zip(train_preds, train_labels) if x == y) / len(train_labels):.4f}, Valid Accuracy {sum(1 for x,y in zip(val_preds, val_labels) if x == y) / len(val_labels):.4f}")
             print("-"*30)
+            self.scheduler.step()
 
             if (epoch) % configs.save_interval == 0:
                 self.save(epoch)
@@ -118,8 +116,6 @@ class MyModel(object):
         print("<===================================================================== Testing =====================================================================>")
 
         test_dataloader = custom_dataloader(x, y, batch_size=128, train=False)
-
-        self.network.eval()
             
         test_labels_final = []
         test_preds_final = []

@@ -23,10 +23,9 @@ model_configs = dotdict({
 })
 
 training_configs = dotdict({
-    "num_epochs": 50,
+    "num_epochs": 100,
 	"learning_rate": 1e-3,
     "batch_size": 128,
     "save_interval": 20,
-    "weight_decay": 1e-1,
-    "betas": (0.9, 0.999)
+    "weight_decay": 1e-5
 })

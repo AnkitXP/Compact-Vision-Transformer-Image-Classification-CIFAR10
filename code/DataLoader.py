@@ -101,12 +101,8 @@ def custom_dataloader(data, label, batch_size, train):
 
     train_transform = transforms.Compose([
         transforms.ToPILImage(),
-        transforms.TrivialAugmentWide(interpolation=transforms.InterpolationMode.BILINEAR),
         transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(32, padding=4),
-        transforms.PILToTensor(),
-        transforms.ConvertImageDtype(torch.float),
-        transforms.RandomErasing(p=0.1)
+        transforms.PILToTensor()
         ])
     
     test_transform = transforms.Compose([
