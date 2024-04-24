@@ -13,19 +13,21 @@ model_configs = dotdict({
     "img_size": 32,
     "in_channels": 3,
     "patch_size": 2,
-    "num_encoders": 12,
-    "embed_dropout": 0.,
-    "transformer_dropout": 0.,
-    "classifier_dropout": 0.3,
+    "depth": 7,
+    "num_heads" : 4,
+    "embed_dropout": 0.1,
+    "transformer_dropout": 0.1,
+    "dropout": 0.3,
     "num_classes": 10,
-    "hidden_channels" : 256,
-    "head_channels" : 32
+    "dim" : 256,
+    "dim_head" : 64,
+    "scale_dim" : 4
 })
 
 training_configs = dotdict({
     "num_epochs": 100,
 	"learning_rate": 1e-3,
     "batch_size": 128,
-    "save_interval": 20,
+    "save_interval": 10,
     "weight_decay": 1e-5
 })

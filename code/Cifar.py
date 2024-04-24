@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Any, Tuple
 from torch.utils.data import Dataset
+import sys
 
 class MyCIFAR10(Dataset):
     def __init__(self, data, target, transform=None, target_transform=None):
@@ -18,7 +19,7 @@ class MyCIFAR10(Dataset):
         img, target = self.data[index], self.target[index]
 
         img = np.transpose(img, [1, 2, 0])
-        
+
         if self.transform is not None:
             img = self.transform(img)
 

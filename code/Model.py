@@ -12,6 +12,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import gc
+from ImageUtils import visualize
+import sys
 
 """This script defines the training, validation and testing process.
 """
@@ -20,12 +22,9 @@ class MyModel(object):
 
     def __init__(self, configs):
         self.configs = configs
-        self.network = CompactVisionTransformer(32, 2, 10).to('cuda')
+        self.network = CompactVisionTransformer(configs).to('cuda')
       
     def train(self, x_train, y_train, configs, x_valid=None, y_valid=None):
-
-        print(configs)
-        print(self.configs)
 
         print("<===================================================================== Training =====================================================================>")
 
@@ -56,6 +55,9 @@ class MyModel(object):
 
                 current_images = torch.tensor(images, dtype=torch.float32).to('cuda')
                 current_labels = torch.tensor(labels, dtype=torch.int64).to('cuda')
+
+                if idx == 0:
+                    visualize(images[0].detach().numpy(), '../results/train.png')
 
                 self.optimizer.zero_grad()
 

@@ -71,7 +71,7 @@ def load_testing_images(data_dir):
     return x_test
 
 
-def train_valid_split(x_train, y_train, train_ratio=0.9):
+def train_valid_split(x_train, y_train, train_ratio=0.8):
     """Split the original training data into a new training dataset
     and a validation dataset.
 
@@ -100,13 +100,15 @@ def train_valid_split(x_train, y_train, train_ratio=0.9):
 def custom_dataloader(data, label, batch_size, train):
 
     train_transform = transforms.Compose([
-        transforms.ToPILImage(),
+        transforms.ToTensor(),
         transforms.RandomHorizontalFlip(),
-        transforms.PILToTensor()
+        transforms.RandomRotation(10),
+        # transforms.ConvertImageDtype(torch.float)
         ])
     
     test_transform = transforms.Compose([
-        transforms.ToTensor()
+        transforms.ToTensor(),
+        # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
     
     if train:
