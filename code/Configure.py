@@ -17,9 +17,9 @@ model_configs = dotdict({
     "num_heads" : 4,
     "embed_dropout": 0.1,
     "transformer_dropout": 0.1,
-    "dropout": 0.3,
+    "dropout": 0.1,
     "num_classes": 10,
-    "dim" : 256,
+    "dim" : 64,
     "dim_head" : 64,
     "scale_dim" : 4
 })
@@ -27,7 +27,7 @@ model_configs = dotdict({
 training_configs = dotdict({
     "num_epochs": 100,
 	"learning_rate": 1e-3,
-    "batch_size": 128,
+    "batch_size": 64,
     "save_interval": 10,
-    "weight_decay": 1e-5
+    "weight_decay": 1e-4
 })

@@ -39,6 +39,7 @@ def load_data(data_dir):
             labels.append(train_ds['labels'])
 
     x_train = np.vstack(data).reshape(-1, 3, 32, 32)
+    x_train = x_train.transpose((0, 2, 3, 1))
     y_train = np.concatenate(labels, axis = 0)
 
     test_path = os.path.join(data_dir, f'test_batch')
@@ -49,6 +50,7 @@ def load_data(data_dir):
         y_test = test_ds['labels']
 
     x_test = np.array(x_test).reshape(-1, 3, 32, 32)
+    x_test = x_test.transpose((0, 2, 3, 1))
     y_test = np.array(y_test)
 
     return x_train, y_train, x_test, y_test
@@ -100,23 +102,26 @@ def train_valid_split(x_train, y_train, train_ratio=0.8):
 def custom_dataloader(data, label, batch_size, train):
 
     train_transform = transforms.Compose([
-        transforms.ToTensor(),
+        transforms.AutoAugment(policy = transforms.AutoAugmentPolicy.CIFAR10),
         transforms.RandomHorizontalFlip(),
         transforms.RandomRotation(10),
-        # transforms.ConvertImageDtype(torch.float)
+        transforms.ToTensor(),
+        # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
         ])
     
     test_transform = transforms.Compose([
         transforms.ToTensor(),
-        # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
+        
         ])
     
     if train:
         train_dataset = MyCIFAR10(data, label, transform=train_transform)
-        train_loader = DataLoader(train_dataset, batch_size, shuffle=True, num_workers=model_configs.num_workers, pin_memory=True)
+        train_loader = DataLoader(train_dataset, batch_size, shuffle=True, num_workers=model_configs.num_workers)
         return train_loader
 
     elif not train:
         test_dataset = MyCIFAR10(data, label, transform=test_transform)
-        test_loader = DataLoader(test_dataset, batch_size, shuffle=False, num_workers=model_configs.num_workers, pin_memory=True)
+        test_loader = DataLoader(test_dataset, batch_size, shuffle=False, num_workers=model_configs.num_workers)
         return test_loader
+

@@ -4,6 +4,8 @@ from Model import MyModel
 from DataLoader import load_data, train_valid_split, load_testing_images
 from Configure import model_configs, training_configs
 from ImageUtils import visualize
+import torch
+import random
 
 def configure():
 	parser = argparse.ArgumentParser()
@@ -12,13 +14,16 @@ def configure():
 	return parser.parse_args()
 
 def main(args, model_configs):
+	torch.manual_seed(42)
+	np.random.seed(42)
+	random.seed(42)
 
 	model = MyModel(model_configs)
 
 	if args.mode == 'train':
 		
-		# checkpoint_path = os.path.join(model_configs.save_dir, args.load) 
-		# model.load(checkpoint_path)
+		checkpoint_path = os.path.join(model_configs.save_dir, args.load) 
+		model.load(checkpoint_path)
 
 		x_train, y_train, x_test, y_test = load_data(model_configs.data_dir)
 		x_train, y_train, x_valid, y_valid = train_valid_split(x_train, y_train)
