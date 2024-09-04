@@ -1,4 +1,4 @@
-# CIFAR-10-Image-Classification
+# Compact-Vision-Transformer-CIFAR10-Image-Classification 
 
 ## Prequisits:
 - Python 3.6+
