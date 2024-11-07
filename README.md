@@ -4,10 +4,11 @@
 This project demonstrates the use of Compact Convolutional Transformers (CCT) for image classification on the CIFAR-10 dataset. Unlike traditional CNNs or large-scale transformers, Compact Transformers offer a highly efficient model with fewer parameters, making them ideal for small-scale datasets and researchers with limited computational resources.
 
 ### Project Details
-Dataset: CIFAR-10
-Model: Compact Convolutional Transformer (CCT)
-Purpose: To improve the Vision Transformer’s performance on low-resolution datasets by combining CNN and transformer layers.
-Methodology
+- Dataset: CIFAR-10
+- Model: Compact Convolutional Transformer (CCT)
+- Purpose: To improve the Vision Transformer’s performance on low-resolution datasets by combining CNN and transformer layers.
+
+### Methodology
 The implementation uses CNN layers as a preprocessing embedding to feed into transformer layers, which helps in feature extraction from convoluted and pooled images. Max pooling is applied to obtain essential features, followed by a series of transformer layers.
 
 ### Key techniques include:
@@ -17,36 +18,36 @@ Max Pooling for feature extraction.
 Random Data Augmentation, CutMix, and MixUp for improved generalization.
 
 ### Hyperparameters
-Image Size: 32px
-Input Channels: 3
-Kernel Size: 2
-Depth of Attention: 7
-Number of Heads: 4
-Dropouts: 0.1 across layers
-Hidden Dimensions: 64
-Batch Size: 64
-Learning Rate: 1e-3
-Optimizer: AdamW with a custom learning rate scheduler (warmup and cosine decay)
+- Image Size: 32px
+- Input Channels: 3
+- Kernel Size: 2
+- Depth of Attention: 7
+- Number of Heads: 4
+- Dropouts: 0.1 across layers
+- Hidden Dimensions: 64
+- Batch Size: 64
+- Learning Rate: 1e-3
+- Optimizer: AdamW with a custom learning rate scheduler (warmup and cosine decay)
 
 ### Training
 The model is trained over 200 epochs. Training metrics, including accuracy and loss, are tracked across epochs. The use of extensive data augmentation has led to better validation scores over training scores, showing the model's generalization capabilities.
 
-### Prequisites:
+### Prerequisites:
 - Python 3.6+
 - PyTorch 1.0+
 
-`conda env create evironment.yml`
+```conda env create evironment.yml```
 
 ### Command to run on train mode:
-`cd code/`
-`python main.py --mode train`
+```cd code/```
+```python main.py --mode train```
 
 ### Command to run on test mode:
-`python main.py --mode test --load <checkpoint name>`
+```python main.py --mode test --load <checkpoint name>```
 
 
 ### Command to run on predict mode:
-`python main.py --mode predict checkpoint name>`
+```python main.py --mode predict checkpoint name>```
 
 Kindly replace the checkpoint file names wherever required.
 
