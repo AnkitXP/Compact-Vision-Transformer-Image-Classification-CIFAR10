@@ -28,7 +28,7 @@ Batch Size: 64
 Learning Rate: 1e-3
 Optimizer: AdamW with a custom learning rate scheduler (warmup and cosine decay)
 
-###Training
+### Training
 The model is trained over 200 epochs. Training metrics, including accuracy and loss, are tracked across epochs. The use of extensive data augmentation has led to better validation scores over training scores, showing the model's generalization capabilities.
 
 ### Prequisites:
@@ -57,5 +57,5 @@ The model achieves a validation accuracy of 87%, showing promising results for a
 Compact Transformers have proven to be effective for small datasets like CIFAR-10, achieving competitive accuracy with a small model size. Future work could focus on tuning the learning rate schedule or experimenting with advanced optimizers to further improve performance.
 
 ### References
-Escaping the Big Data Paradigm with Compact Transformers (https://arxiv.org/pdf/2104.05704)
-An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (https://arxiv.org/pdf/2010.11929)
+- Escaping the Big Data Paradigm with Compact Transformers (https://arxiv.org/pdf/2104.05704)
+- An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (https://arxiv.org/pdf/2010.11929)
